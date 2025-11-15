@@ -1,0 +1,68 @@
+﻿<Window x:Class="QuickLaunch.UI.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="QuickLaunch" Height="300" Width="800"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        ResizeMode="NoResize"
+        Background="Transparent">
+
+    <Border CornerRadius="20"
+            Background="White"
+            Padding="12"
+            BorderBrush="Gray"
+            SnapsToDevicePixels="True">
+
+        <StackPanel Margin="30,20,30,20" Orientation="Vertical" VerticalAlignment="Top" >
+            <!-- Search box -->
+            <Border CornerRadius="20"
+                    Background="#66FFFFFF"
+                    BorderThickness="1"
+                    Height="50"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top">
+
+                <Grid>
+                    <!-- Search icon -->
+                    <TextBlock FontFamily="Segoe MDL2 Assets"
+                               Text=""
+                               FontSize="32"
+                               Foreground="Black"
+                               VerticalAlignment="Center"
+                               Margin="10,0,0,0"/>
+
+                    <!-- TextBox -->
+                    <TextBox x:Name="SearchTextBox"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             VerticalContentAlignment="Center"
+                             FontSize="32"
+                             Foreground="Black"
+                             Padding="50,0,10,0"
+                             TextChanged="SearchTextBox_TextChanged"/>
+
+                    <!-- Placeholder -->
+                    <TextBlock x:Name="PlaceholderText"
+                               Text="Search..."
+                               Foreground="Gray"
+                               FontSize="32"
+                               VerticalAlignment="Center"
+                               Margin="50,0,0,0"
+                               IsHitTestVisible="False"/>
+                </Grid>
+            </Border>
+
+            <!-- Results below -->
+            <ListBox x:Name="SearchResults"
+                     Margin="0,10,0,0"
+                     Height="150"
+                     FontSize="20"
+                     Background="Transparent"
+                     BorderThickness="0"
+                     Visibility="Collapsed"
+                     DisplayMemberPath="Display"
+                     MouseLeftButtonUp="SearchResults_MouseLeftButtonUp"/>
+        </StackPanel>
+    </Border>
+</Window>

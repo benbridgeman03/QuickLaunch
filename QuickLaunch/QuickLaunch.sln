@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36310.24 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuickLaunch.Core", "QuickLaunch.Core\QuickLaunch.Core.csproj", "{C14DA650-DC59-41DF-9EF8-AF2244863831}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuickLaunch.UI", "QuickLaunch.UI\QuickLaunch.UI.csproj", "{36305D58-BCD4-43A7-9F68-D474B7D802CE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C14DA650-DC59-41DF-9EF8-AF2244863831}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C14DA650-DC59-41DF-9EF8-AF2244863831}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C14DA650-DC59-41DF-9EF8-AF2244863831}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C14DA650-DC59-41DF-9EF8-AF2244863831}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36305D58-BCD4-43A7-9F68-D474B7D802CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36305D58-BCD4-43A7-9F68-D474B7D802CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36305D58-BCD4-43A7-9F68-D474B7D802CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36305D58-BCD4-43A7-9F68-D474B7D802CE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1DBE1664-977E-4FA3-8D91-FBC5E8A9D8D6}
+	EndGlobalSection
+EndGlobal
