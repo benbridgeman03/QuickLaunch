@@ -82,13 +82,15 @@ namespace QuickLaunch.UI.Views
                 return;
             }
 
+            int relevance = 0;
+
             var results = _indexer.Items
                 .Where(i => !string.IsNullOrEmpty(i.FileName) &&
                            (i.FileName.Contains(query, StringComparison.OrdinalIgnoreCase)
                             || SearchService.GetFuzzyScore(query, i.FileName) > 50))
                 .Select(i =>
                 {
-                    int relevance = i.FileName != null ? SearchService.GetFuzzyScore(query, i.FileName) : 0;
+                    relevance = i.FileName != null ? SearchService.GetFuzzyScore(query, i.FileName) : 0;
 
                     if (!string.IsNullOrEmpty(i.FileName))
                     {
@@ -108,13 +110,10 @@ namespace QuickLaunch.UI.Views
                 .Take(3)
                 .Select(x => new SearchResultItem
                 {
-                    Display = $"{x.Item.FileName} – {x.Item.Type}",
+                    Display = $"{x.Item.FileName} – {x.Item.Type} - {relevance + x.TotalScore}",
                     Item = x.Item
                 })
                 .ToList();
-
-
-
 
             if (results.Any())
             {

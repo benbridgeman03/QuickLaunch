@@ -44,14 +44,23 @@ namespace QuickLaunch.Core.Services
 
         private static int GetExtensionScore(IndexItem item)
         {
-            return ScoringRules.ExtensionScores.TryGetValue(Path.GetExtension(item.Path).ToLower(), out int s) ? s : 0;
+            try
+            {
+                if (item.Type == ItemType.Directory)
+                    return 40;
+                return ScoringRules.ExtensionScores.TryGetValue(Path.GetExtension(item.Path).ToLower(), out int s) ? s : 0;
+            }
+            catch
+            {
+                return 0;
+            }
         }
 
         private static int GetDepthScore(IndexItem item, string rootPath)
         {
             var relative = Path.GetRelativePath(rootPath, item.Path);
             int depth = relative.Split(Path.DirectorySeparatorChar).Length - 1;
-            return -depth * 5;
+            return -depth * 20;
         }
 
         private int GetPathScore(IndexItem item)
@@ -69,10 +78,15 @@ namespace QuickLaunch.Core.Services
 
         private int GetNameScore(string name)
         {
-            if (name.Length > 50) return -50;
-            if (name.All(c => char.IsLetterOrDigit(c) || c == '_')) return -10;
-            if (helperKeywords.Any(k => name.ToLower().Contains(k)))
-                return -100;
+            try
+            {
+                if (name.Length > 50) return -50;
+                if (name.All(c => char.IsLetterOrDigit(c) || c == '_')) return -10;
+                if (helperKeywords.Any(k => name.ToLower().Contains(k)))
+                    return -100;
+            }
+            catch { return 0; }
+
             return 0;
         }
 

@@ -42,6 +42,7 @@ namespace QuickLaunch.Core.Models
             ".vscode",
             "bin",
             "obj",
+            "Recent"
         };
     }
 }

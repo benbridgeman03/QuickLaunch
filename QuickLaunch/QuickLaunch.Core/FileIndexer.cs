@@ -68,57 +68,48 @@ namespace QuickLaunch.Core
             }
         }
 
-        private void ProcessDirectory(string path, ConcurrentQueue<string> queue)
+        private bool ProcessDirectory(string path, ConcurrentQueue<string> queue)
         {
+            bool folderHasApprovedFiles = false;
+
             IEnumerable<string> dirs;
             try
             {
                 dirs = Directory.EnumerateDirectories(path);
             }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"[ERROR] Cannot access directory: {path} -> {ex.Message}");
-                return;
-            }
+            catch { return false; }
 
             foreach (var dir in dirs)
             {
                 var info = new DirectoryInfo(dir);
 
-                // Skip hidden/system DIRECTORIES only
-                if (IsHiddenOrSystem(info))
-                    continue;
-
-                if (_ignoredFolders.Contains(info.Name.ToLower()))
+                if (IsHiddenOrSystem(info) || _ignoredFolders.Contains(info.Name.ToLower()))
                     continue;
 
                 queue.Enqueue(dir);
-            }
 
-            bool folderHasApprovedFiles = false;
+                if (ProcessDirectory(dir, queue))
+                {
+                    folderHasApprovedFiles = true;
+                }
+            }
 
             IEnumerable<string> files;
             try
             {
                 files = Directory.EnumerateFiles(path);
             }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"[ERROR] Cannot access directory: {path} -> {ex.Message}");
-                return;
-            }
+            catch { return folderHasApprovedFiles; }
 
             foreach (var file in files)
             {
                 var info = new FileInfo(file);
-
                 string ext = info.Extension.ToLower();
-                if (!_allowed.Contains(ext))
-                    continue;
+                if (!_allowed.Contains(ext)) continue;
 
                 folderHasApprovedFiles = true;
 
-                ItemType type = ext switch
+                var type = ext switch
                 {
                     ".exe" => ItemType.Exe,
                     ".lnk" => ItemType.Shortcut,
@@ -132,24 +123,22 @@ namespace QuickLaunch.Core
                     FullName = info.Name,
                     Path = info.FullName,
                     Type = type,
-                    LastModified = info.LastWriteTime,
+                    LastModified = info.LastWriteTime
                 };
 
                 item.Score = _score.ScoreFile(item, _rootFolder);
 
-                var key = item.FileName.ToLowerInvariant();
-
+                var fileKey = $"{item.FileName}|{item.Type}";
                 _itemsByName.AddOrUpdate(
-                    key,
+                    fileKey,
                     item,
-                    (k, existing) => item.Score > existing.Score ? item : existing
+                    (key, existing) => item.Score > existing.Score ? item : existing
                 );
             }
 
-            var dirInfo = new DirectoryInfo(path);
-
             if (folderHasApprovedFiles)
             {
+                var dirInfo = new DirectoryInfo(path);
                 var dirItem = new IndexItem
                 {
                     FileName = Path.GetFileName(path),
@@ -163,7 +152,9 @@ namespace QuickLaunch.Core
                 _itemsByName.TryAdd(dirKey, dirItem);
             }
 
+            return folderHasApprovedFiles;
         }
+
 
 
         private static bool IsHiddenOrSystem(FileSystemInfo info)
