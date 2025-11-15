@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using QuickLaunch.Core.Services;
 
 namespace QuickLaunch.UI.Views
 {
@@ -82,15 +83,36 @@ namespace QuickLaunch.UI.Views
             }
 
             var results = _indexer.Items
-                .Where(i => i.FullName.Contains(query, StringComparison.OrdinalIgnoreCase))
-                .OrderByDescending(i => i.Score)
-                .Take(3)
-                .Select(i => new SearchResultItem
+                .Where(i => !string.IsNullOrEmpty(i.FileName) &&
+                           (i.FileName.Contains(query, StringComparison.OrdinalIgnoreCase)
+                            || SearchService.GetFuzzyScore(query, i.FileName) > 50))
+                .Select(i =>
                 {
-                    Display = $"{i.FileName} – {i.Type}",
-                    Item = i
+                    int relevance = i.FileName != null ? SearchService.GetFuzzyScore(query, i.FileName) : 0;
+
+                    if (!string.IsNullOrEmpty(i.FileName))
+                    {
+                        if (string.Equals(i.FileName, query, StringComparison.OrdinalIgnoreCase))
+                            relevance += 50;
+                        else if (i.FileName.StartsWith(query, StringComparison.OrdinalIgnoreCase))
+                            relevance += 20;
+                    }
+
+                    return new
+                    {
+                        Item = i,
+                        TotalScore = i.Score + relevance
+                    };
+                })
+                .OrderByDescending(x => x.TotalScore)
+                .Take(3)
+                .Select(x => new SearchResultItem
+                {
+                    Display = $"{x.Item.FileName} – {x.Item.Type}",
+                    Item = x.Item
                 })
                 .ToList();
+
 
 
 

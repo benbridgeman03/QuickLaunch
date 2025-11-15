@@ -9,8 +9,10 @@ namespace QuickLaunch.Core
 {
     public class FileIndexer
     {
-        public ConcurrentBag<IndexItem> Items { get; } = new();
-        
+        private readonly ConcurrentDictionary<string, IndexItem> _itemsByName = new();
+
+        public IEnumerable<IndexItem> Items => _itemsByName.Values;
+
         private readonly HashSet<string> _allowed;
         private readonly HashSet<string> _ignoredFolders;
 
@@ -124,7 +126,7 @@ namespace QuickLaunch.Core
                     _ => ItemType.File
                 };
 
-                IndexItem item = new IndexItem
+                var item = new IndexItem
                 {
                     FileName = Path.GetFileNameWithoutExtension(info.Name),
                     FullName = info.Name,
@@ -135,21 +137,32 @@ namespace QuickLaunch.Core
 
                 item.Score = _score.ScoreFile(item, _rootFolder);
 
-                Items.Add(item);
+                var key = item.FileName.ToLowerInvariant();
+
+                _itemsByName.AddOrUpdate(
+                    key,
+                    item,
+                    (k, existing) => item.Score > existing.Score ? item : existing
+                );
             }
 
             var dirInfo = new DirectoryInfo(path);
 
             if (folderHasApprovedFiles)
             {
-                Items.Add(new IndexItem
+                var dirItem = new IndexItem
                 {
+                    FileName = Path.GetFileName(path),
                     FullName = Path.GetFileName(path),
                     Path = path,
                     Type = ItemType.Directory,
                     LastModified = dirInfo.LastWriteTime
-                });
+                };
+
+                var dirKey = $"{dirItem.FileName}|{dirItem.Type}";
+                _itemsByName.TryAdd(dirKey, dirItem);
             }
+
         }
 
 

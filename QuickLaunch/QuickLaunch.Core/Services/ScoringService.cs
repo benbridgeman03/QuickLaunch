@@ -22,6 +22,14 @@ namespace QuickLaunch.Core.Services
             "debug", "dbg", "info", "setup"
         };
 
+        string[] userFolders = new[]
+        {
+            Environment.GetFolderPath(Environment.SpecialFolder.Desktop).ToLower(),
+            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments).ToLower(),
+            Environment.GetFolderPath(Environment.SpecialFolder.MyPictures).ToLower(),
+            Environment.GetFolderPath(Environment.SpecialFolder.MyVideos).ToLower(),
+        };
+
         public int ScoreFile(IndexItem item, string rootPath)
         {
             int score = 0;
@@ -29,6 +37,7 @@ namespace QuickLaunch.Core.Services
             score += GetDepthScore(item, rootPath);
             score += GetNameScore(item.FullName);
             score += GetLastModifiedScore(item.LastModified);
+            score += GetPathScore(item);
 
             return score;
         }
@@ -45,12 +54,25 @@ namespace QuickLaunch.Core.Services
             return -depth * 5;
         }
 
+        private int GetPathScore(IndexItem item)
+        {
+            string path = item.Path.ToLower();
+
+            foreach (var folder in userFolders)
+            {
+                if (path.StartsWith(folder))
+                    return 100;
+            }
+            return 0;
+        }
+
+
         private int GetNameScore(string name)
         {
             if (name.Length > 50) return -50;
             if (name.All(c => char.IsLetterOrDigit(c) || c == '_')) return -10;
-            if (helperKeywords.Any(k => name.Contains(k)))
-                return -50;
+            if (helperKeywords.Any(k => name.ToLower().Contains(k)))
+                return -100;
             return 0;
         }
 
