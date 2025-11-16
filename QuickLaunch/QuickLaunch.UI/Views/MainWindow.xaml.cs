@@ -1,6 +1,8 @@
 ﻿using QuickLaunch.Core;
 using QuickLaunch.Core.Models;
+using QuickLaunch.Core.Services;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
@@ -13,7 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using QuickLaunch.Core.Services;
+using Path = System.IO.Path;
 
 namespace QuickLaunch.UI.Views
 {
@@ -60,14 +62,14 @@ namespace QuickLaunch.UI.Views
                                              : Visibility.Collapsed;
             };
 
-            Loaded += MainWindow_Loaded;
+            ContentRendered += MainWindow_ContentRendered;
         }
 
-        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        private void MainWindow_ContentRendered(object? sender, EventArgs e)
         {
             Width = SystemParameters.PrimaryScreenWidth * 0.5;
-            Left = (SystemParameters.PrimaryScreenWidth - Width) / 2;
 
+            Left = (SystemParameters.PrimaryScreenWidth - Width) / 2;
             Top -= 100;
         }
 
@@ -86,39 +88,6 @@ namespace QuickLaunch.UI.Views
 
             var results = _search.SearchItem(query);
 
-            //int relevance = 0;
-
-            //var results = _indexer.Items
-            //    .Where(i => !string.IsNullOrEmpty(i.FileName) &&
-            //               (i.FileName.Contains(query, StringComparison.OrdinalIgnoreCase)
-            //                || SearchService.GetFuzzyScore(query, i.FileName) > 50))
-            //    .Select(i =>
-            //    {
-            //        relevance = i.FileName != null ? SearchService.GetFuzzyScore(query, i.FileName) : 0;
-
-            //        if (!string.IsNullOrEmpty(i.FileName))
-            //        {
-            //            if (string.Equals(i.FileName, query, StringComparison.OrdinalIgnoreCase))
-            //                relevance += 50;
-            //            else if (i.FileName.StartsWith(query, StringComparison.OrdinalIgnoreCase))
-            //                relevance += 20;
-            //        }
-
-            //        return new
-            //        {
-            //            Item = i,
-            //            TotalScore = i.Score + relevance
-            //        };
-            //    })
-            //    .OrderByDescending(x => x.TotalScore)
-            //    .Take(3)
-            //    .Select(x => new SearchResultItem
-            //    {
-            //        Display = $"{x.Item.FileName} – {x.Item.Type} - {relevance + x.TotalScore}",
-            //        Item = x.Item
-            //    })
-            //    .ToList();
-
             if (results.Any())
             {
                 SearchResults.ItemsSource = results;
@@ -135,20 +104,62 @@ namespace QuickLaunch.UI.Views
         {
             if (SearchResults.SelectedItem is SearchResultItem selected)
             {
-                string filePath = selected.Item.Path;
+                string path = selected.Item.Path;
 
-                string? folder = System.IO.Path.GetDirectoryName(filePath);
+                if (string.IsNullOrEmpty(path))
+                    return;
 
-                if (folder != null)
+                try
                 {
-                    try
+                    if (Directory.Exists(path))
                     {
-                        Process.Start("explorer.exe", folder);
+                        Process.Start(new ProcessStartInfo
+                        {
+                            FileName = path,
+                            UseShellExecute = true,
+                            Verb = "open"
+                        });
                     }
-                    catch (Exception ex)
+                    else if (File.Exists(path))
                     {
-                        Debug.WriteLine($"Failed to open directory: {ex.Message}");
+                        string ext = Path.GetExtension(path).ToLower();
+
+                        if (ext == ".exe")
+                        {
+                            Process.Start(new ProcessStartInfo
+                            {
+                                FileName = path,
+                                UseShellExecute = true
+                            });
+                        }
+                        else
+                        {
+                            Process.Start(new ProcessStartInfo
+                            {
+                                FileName = path,
+                                UseShellExecute = true
+                            });
+                        }
                     }
+                    else
+                    {
+                        string appUserModelId = selected.Item.Path;
+                        if (!string.IsNullOrEmpty(appUserModelId))
+                        {
+                            var psi = new ProcessStartInfo("explorer.exe", $"shell:appsFolder\\{appUserModelId}")
+                            {
+                                UseShellExecute = true
+                            };
+                            Process.Start(psi);
+                        }
+                    }
+
+                    ToggleLauncher();
+                }
+
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Failed to open item: {ex.Message}");
                 }
             }
         }

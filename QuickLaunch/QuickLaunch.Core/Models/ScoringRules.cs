@@ -24,14 +24,14 @@ namespace QuickLaunch.Core.Models
 
         public static readonly string[] helperKeywords =
         {
-            "updater", "update",
+            "updater", "update", "driver",
             "report", "reporter",
             "error", "errorreporter",
             "helper", "service",
             "bootstrap", "install", "installer",
             "uninstall",
             "crash", "crashreporter", "crashhandler",
-            "debug", "dbg", "info", "setup"
+            "debug", "dbg", "info", "setup", "documentation"
         };
     }
 }

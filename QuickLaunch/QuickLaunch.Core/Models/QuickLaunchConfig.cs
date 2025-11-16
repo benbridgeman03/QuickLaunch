@@ -20,12 +20,11 @@ namespace QuickLaunch.Core.Models
             Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
             Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
             Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments),
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            @"C:\ProgramData\Microsoft\Windows\Start Menu\Programs",
+            //Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            //@"C:\ProgramData\Microsoft\Windows\Start Menu\Programs",
             @"C:\Program Files (x86)",
             Environment.GetFolderPath(Environment.SpecialFolder.Programs),
-            @"C:\Windows\System32",
-            @"C:\Program Files\WindowsApps\",
+            //@"C:\Windows\System32",
         };
 
         public HashSet<string> IgnoredFolders = new(StringComparer.OrdinalIgnoreCase)

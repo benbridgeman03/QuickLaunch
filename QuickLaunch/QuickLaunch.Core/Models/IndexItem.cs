@@ -12,6 +12,7 @@ namespace QuickLaunch.Core.Models
         Exe,
         Directory,
         Shortcut,
+        UWP
     }
 
     public class IndexItem
@@ -22,6 +23,7 @@ namespace QuickLaunch.Core.Models
         public required string Path { get; set; }
         public required ItemType Type { get; set; }
         public DateTime LastModified { get; set; }
+        public DateTime LastAccessed { get; set; }
         public int Score { get; set; }
     }
 }

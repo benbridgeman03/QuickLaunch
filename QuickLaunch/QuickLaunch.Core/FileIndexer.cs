@@ -1,8 +1,10 @@
-﻿using QuickLaunch.Core.Models;
+﻿using Microsoft.Win32;
+using QuickLaunch.Core.Models;
 using QuickLaunch.Core.Services;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text.Json;
+using Shell32;
 
 namespace QuickLaunch.Core
 {
@@ -67,7 +69,9 @@ namespace QuickLaunch.Core
                                     .Select(_ => Task.Run(() => Worker(queue)))
                                     .ToList();
 
-            await Task.WhenAll(workers);
+            var uwpTask = Task.Run(() => IndexUwpApps());
+
+            await Task.WhenAll(workers.Concat([uwpTask]));
         }
 
         private void Worker(ConcurrentQueue<string> queue)
@@ -99,6 +103,22 @@ namespace QuickLaunch.Core
 
                 if (IsHiddenOrSystem(info) || _ignoredFolders.Contains(info.Name.ToLower()))
                     continue;
+
+                var dirx = new DirectoryInfo(path);
+
+                var dirItem = new IndexItem
+                {
+                    FileName = dirx.Name,
+                    FullName = dirx.Name,
+                    Path = path,
+                    Type = ItemType.Directory,
+                    LastModified = dirx.LastWriteTime,
+                    LastAccessed = dirx.LastAccessTime,
+                };
+
+                dirItem.Score = _score.ScoreFile(dirItem, _rootFolder);
+
+                _itemsByPath[path] = dirItem;
 
                 queue.Enqueue(dir);
             }
@@ -141,34 +161,14 @@ namespace QuickLaunch.Core
                     Path = info.FullName,
                     Desc = description ?? "",
                     Type = GetItemType(ext),
-                    LastModified = info.LastWriteTime
+                    LastModified = info.LastWriteTime,
+                    LastAccessed = info.LastAccessTime
                 };
 
                 item.Score = _score.ScoreFile(item, _rootFolder);
 
-                var key = $"{item.FileName.ToLowerInvariant()}|{item.Type}";
-                _itemsByPath.AddOrUpdate(
-                    key,
-                    item,
-                    (k, existing) => item.Score > existing.Score ? item : existing
-                );
-            }
-
-            if (folderHasAllowed)
-            {
-                var dir = new DirectoryInfo(path);
-
-                var dirItem = new IndexItem
-                {
-                    FileName = dir.Name,
-                    FullName = dir.Name,
-                    Path = path,
-                    Type = ItemType.Directory,
-                    LastModified = dir.LastWriteTime,
-                    Score = 40 
-                };
-
-                _itemsByPath[path] = dirItem;
+                var key = item.FileName.ToLowerInvariant();
+                _itemsByPath.AddOrUpdate(key, item, (_, existing) => item.Score > existing.Score ? item : existing);
             }
 
             return folderHasAllowed;
@@ -214,6 +214,51 @@ namespace QuickLaunch.Core
             var json = JsonSerializer.Serialize(sorted, new JsonSerializerOptions { WriteIndented = true });
 
             File.WriteAllText(filePath, json);
+        }
+
+        public void IndexUwpApps()
+        {
+            try
+            {
+                Type shellType = Type.GetTypeFromProgID("Shell.Application");
+                dynamic shell = Activator.CreateInstance(shellType);
+                dynamic appsFolder = shell.NameSpace("shell:Appsfolder");
+
+                foreach (dynamic item in appsFolder.Items())
+                {
+                    string appName = item.Name;
+                    Console.WriteLine(appName);
+                }
+
+                foreach (dynamic item in appsFolder.Items())
+                {
+                    string appId = item.ExtendedProperty("System.AppUserModel.ID") as string;
+
+                    string appName = item.Name;
+                    if (string.IsNullOrWhiteSpace(appName))
+                        continue;
+
+                    var uwpItem = new IndexItem
+                    {
+                        FileName = appName,
+                        FullName = appName,
+                        Path = appId,
+                        Desc = "",
+                        Type = ItemType.UWP,
+                        LastModified = DateTime.Now,
+                        LastAccessed = DateTime.Now,
+                        Score = 150
+                    };
+
+                    string key = uwpItem.FileName.ToLowerInvariant();
+                    _itemsByPath.AddOrUpdate(key, uwpItem, (_, existing) => uwpItem.Score > existing.Score ? uwpItem : existing);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to index UWP apps: {ex.Message}");
+            }
         }
     }
 }
