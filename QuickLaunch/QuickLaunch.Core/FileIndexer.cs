@@ -2,16 +2,16 @@
 using QuickLaunch.Core.Services;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 
 namespace QuickLaunch.Core
 {
     public class FileIndexer
     {
-        private readonly ConcurrentDictionary<string, IndexItem> _itemsByName = new();
+        private readonly ConcurrentDictionary<string, IndexItem> _itemsByPath = new();
+        private Dictionary<string, IndexItem> _previousIndex = new();
 
-        public IEnumerable<IndexItem> Items => _itemsByName.Values;
+        public IEnumerable<IndexItem> Items => _itemsByPath.Values;
 
         private readonly HashSet<string> _allowed;
         private readonly HashSet<string> _ignoredFolders;
@@ -34,23 +34,40 @@ namespace QuickLaunch.Core
                 .Select(e => e.ToLower())
                 .ToHashSet();
         }
-
-        public async Task BuildIndexAsync(string rootPath)
+        public void LoadExistingIndex(string jsonPath)
         {
-            _rootFolder = Path.GetFullPath(rootPath);
-
-            var folderQueue = new ConcurrentQueue<string>();
-            folderQueue.Enqueue(rootPath);
-
-            int maxWorkers = Environment.ProcessorCount * 2;
-            var tasks = new List<Task>();
-
-            for (int i = 0; i < maxWorkers; i++)
+            if (!File.Exists(jsonPath))
             {
-                tasks.Add(Task.Run(() => Worker(folderQueue)));
+                _previousIndex = new();
+                return;
             }
 
-            await Task.WhenAll(tasks);
+            try
+            {
+                var items = JsonSerializer.Deserialize<List<IndexItem>>(File.ReadAllText(jsonPath));
+                _previousIndex = items?.ToDictionary(i => i.Path, i => i)
+                                ?? new();
+            }
+            catch
+            {
+                _previousIndex = new();
+            }
+        }
+        public async Task BuildIndexAsync(string rootPath)
+        {
+            LoadExistingIndex("index.json");
+
+            _rootFolder = Path.GetFullPath(rootPath);
+
+            var queue = new ConcurrentQueue<string>();
+            queue.Enqueue(rootPath);
+
+            int workerCount = Environment.ProcessorCount * 2;
+            var workers = Enumerable.Range(0, workerCount)
+                                    .Select(_ => Task.Run(() => Worker(queue)))
+                                    .ToList();
+
+            await Task.WhenAll(workers);
         }
 
         private void Worker(ConcurrentQueue<string> queue)
@@ -70,13 +87,10 @@ namespace QuickLaunch.Core
 
         private bool ProcessDirectory(string path, ConcurrentQueue<string> queue)
         {
-            bool folderHasApprovedFiles = false;
+            bool folderHasAllowed = false;
 
             IEnumerable<string> dirs;
-            try
-            {
-                dirs = Directory.EnumerateDirectories(path);
-            }
+            try { dirs = Directory.EnumerateDirectories(path); }
             catch { return false; }
 
             foreach (var dir in dirs)
@@ -87,92 +101,117 @@ namespace QuickLaunch.Core
                     continue;
 
                 queue.Enqueue(dir);
-
-                if (ProcessDirectory(dir, queue))
-                {
-                    folderHasApprovedFiles = true;
-                }
             }
 
             IEnumerable<string> files;
-            try
-            {
-                files = Directory.EnumerateFiles(path);
-            }
-            catch { return folderHasApprovedFiles; }
+            try { files = Directory.EnumerateFiles(path); }
+            catch { return false; }
 
             foreach (var file in files)
             {
                 var info = new FileInfo(file);
                 string ext = info.Extension.ToLower();
-                if (!_allowed.Contains(ext)) continue;
 
-                folderHasApprovedFiles = true;
+                if (!_allowed.Contains(ext))
+                    continue;
 
-                var type = ext switch
+                folderHasAllowed = true;
+
+                if (IsFilteredSystem32(file))
+                    continue;
+
+                _previousIndex.TryGetValue(info.FullName, out var oldEntry);
+
+                string? description = oldEntry?.Desc;
+
+                if (description == null && ext == ".exe")
                 {
-                    ".exe" => ItemType.Exe,
-                    ".lnk" => ItemType.Shortcut,
-                    ".url" => ItemType.Shortcut,
-                    _ => ItemType.File
-                };
+                    try
+                    {
+                        var ver = FileVersionInfo.GetVersionInfo(file);
+                        description = ver.FileDescription;
+                    }
+                    catch { description = ""; }
+                }
 
                 var item = new IndexItem
                 {
                     FileName = Path.GetFileNameWithoutExtension(info.Name),
                     FullName = info.Name,
                     Path = info.FullName,
-                    Type = type,
+                    Desc = description ?? "",
+                    Type = GetItemType(ext),
                     LastModified = info.LastWriteTime
                 };
 
                 item.Score = _score.ScoreFile(item, _rootFolder);
 
-                var fileKey = $"{item.FileName}|{item.Type}";
-                _itemsByName.AddOrUpdate(
-                    fileKey,
+                var key = $"{item.FileName.ToLowerInvariant()}|{item.Type}";
+                _itemsByPath.AddOrUpdate(
+                    key,
                     item,
-                    (key, existing) => item.Score > existing.Score ? item : existing
+                    (k, existing) => item.Score > existing.Score ? item : existing
                 );
             }
 
-            if (folderHasApprovedFiles)
+            if (folderHasAllowed)
             {
-                var dirInfo = new DirectoryInfo(path);
+                var dir = new DirectoryInfo(path);
+
                 var dirItem = new IndexItem
                 {
-                    FileName = Path.GetFileName(path),
-                    FullName = Path.GetFileName(path),
+                    FileName = dir.Name,
+                    FullName = dir.Name,
                     Path = path,
                     Type = ItemType.Directory,
-                    LastModified = dirInfo.LastWriteTime
+                    LastModified = dir.LastWriteTime,
+                    Score = 40 
                 };
 
-                var dirKey = $"{dirItem.FileName}|{dirItem.Type}";
-                _itemsByName.TryAdd(dirKey, dirItem);
+                _itemsByPath[path] = dirItem;
             }
 
-            return folderHasApprovedFiles;
+            return folderHasAllowed;
         }
-
-
 
         private static bool IsHiddenOrSystem(FileSystemInfo info)
         {
-            var attr = info.Attributes;
-            return (attr & FileAttributes.Hidden) != 0;
+            var a = info.Attributes;
+            return (a & FileAttributes.Hidden) != 0;
+        }
+
+        private static ItemType GetItemType(string ext) =>
+            ext switch
+            {
+                ".exe" => ItemType.Exe,
+                ".lnk" => ItemType.Shortcut,
+                ".url" => ItemType.Shortcut,
+                _ => ItemType.File
+            };
+
+        private static bool IsFilteredSystem32(string path)
+        {
+            if (!path.StartsWith(@"C:\Windows\System32", StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            string name = Path.GetFileName(path);
+
+            HashSet<string> allowed = new(StringComparer.OrdinalIgnoreCase)
+            {
+                "notepad.exe","calc.exe","mspaint.exe","cmd.exe","powershell.exe",
+                "taskmgr.exe","explorer.exe","snippingtool.exe"
+            };
+
+            return !allowed.Contains(name);
         }
 
         public void SaveToJson(string filePath)
         {
-            Debug.Write("Finished Indexing, Creating JSON");
+            Debug.WriteLine("Saving JSON");
 
-            var sortedItems = Items.OrderByDescending(i => i.Score).ToList();
+            var sorted = _itemsByPath.Values.OrderByDescending(i => i.Score).ToList();
 
-            string json = JsonSerializer.Serialize(sortedItems, new JsonSerializerOptions
-            {
-                WriteIndented = true
-            });
+            var json = JsonSerializer.Serialize(sorted, new JsonSerializerOptions { WriteIndented = true });
 
             File.WriteAllText(filePath, json);
         }

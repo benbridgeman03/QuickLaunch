@@ -1,6 +1,7 @@
 ﻿using QuickLaunch.Core.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,25 +11,15 @@ namespace QuickLaunch.Core.Services
 {
     public class ScoringService
     {
-        string[] helperKeywords =
-        {
-            "updater", "update",
-            "report", "reporter",
-            "error", "errorreporter",
-            "helper", "service",
-            "bootstrap", "install", "installer",
-            "uninstall",
-            "crash", "crashreporter", "crashhandler",
-            "debug", "dbg", "info", "setup"
-        };
 
-        string[] userFolders = new[]
-        {
+        string[] userFolders =
+        [
             Environment.GetFolderPath(Environment.SpecialFolder.Desktop).ToLower(),
             Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments).ToLower(),
             Environment.GetFolderPath(Environment.SpecialFolder.MyPictures).ToLower(),
             Environment.GetFolderPath(Environment.SpecialFolder.MyVideos).ToLower(),
-        };
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        ];
 
         public int ScoreFile(IndexItem item, string rootPath)
         {
@@ -65,15 +56,18 @@ namespace QuickLaunch.Core.Services
 
         private int GetPathScore(IndexItem item)
         {
-            string path = item.Path.ToLower();
+            string path = item.Path.ToLowerInvariant();
 
             foreach (var folder in userFolders)
             {
-                if (path.StartsWith(folder))
-                    return 100;
+                string folderPath = folder.TrimEnd('\\').ToLowerInvariant();
+                if (path.StartsWith(folderPath + "\\") || path == folderPath)
+                    return 50;
             }
+
             return 0;
         }
+
 
 
         private int GetNameScore(string name)
@@ -82,7 +76,7 @@ namespace QuickLaunch.Core.Services
             {
                 if (name.Length > 50) return -50;
                 if (name.All(c => char.IsLetterOrDigit(c) || c == '_')) return -10;
-                if (helperKeywords.Any(k => name.ToLower().Contains(k)))
+                if (ScoringRules.helperKeywords.Any(k => name.ToLower().Contains(k)))
                     return -100;
             }
             catch { return 0; }

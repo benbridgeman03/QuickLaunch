@@ -24,6 +24,7 @@ namespace QuickLaunch.UI.Views
     public partial class MainWindow : Window
     {
         private readonly FileIndexer _indexer;
+        private readonly SearchService _search;
 
         [DllImport("user32.dll")]
         private static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
@@ -38,11 +39,12 @@ namespace QuickLaunch.UI.Views
         private const int WM_HOTKEY = 0x0312;
 
 
-        public MainWindow(FileIndexer indexer)
+        public MainWindow(FileIndexer indexer, SearchService search)
         {
             InitializeComponent();
 
             _indexer = indexer;
+            _search = search;
 
             SearchTextBox.TextChanged += (s, e) =>
             {
@@ -82,38 +84,40 @@ namespace QuickLaunch.UI.Views
                 return;
             }
 
-            int relevance = 0;
+            var results = _search.SearchItem(query);
 
-            var results = _indexer.Items
-                .Where(i => !string.IsNullOrEmpty(i.FileName) &&
-                           (i.FileName.Contains(query, StringComparison.OrdinalIgnoreCase)
-                            || SearchService.GetFuzzyScore(query, i.FileName) > 50))
-                .Select(i =>
-                {
-                    relevance = i.FileName != null ? SearchService.GetFuzzyScore(query, i.FileName) : 0;
+            //int relevance = 0;
 
-                    if (!string.IsNullOrEmpty(i.FileName))
-                    {
-                        if (string.Equals(i.FileName, query, StringComparison.OrdinalIgnoreCase))
-                            relevance += 50;
-                        else if (i.FileName.StartsWith(query, StringComparison.OrdinalIgnoreCase))
-                            relevance += 20;
-                    }
+            //var results = _indexer.Items
+            //    .Where(i => !string.IsNullOrEmpty(i.FileName) &&
+            //               (i.FileName.Contains(query, StringComparison.OrdinalIgnoreCase)
+            //                || SearchService.GetFuzzyScore(query, i.FileName) > 50))
+            //    .Select(i =>
+            //    {
+            //        relevance = i.FileName != null ? SearchService.GetFuzzyScore(query, i.FileName) : 0;
 
-                    return new
-                    {
-                        Item = i,
-                        TotalScore = i.Score + relevance
-                    };
-                })
-                .OrderByDescending(x => x.TotalScore)
-                .Take(3)
-                .Select(x => new SearchResultItem
-                {
-                    Display = $"{x.Item.FileName} – {x.Item.Type} - {relevance + x.TotalScore}",
-                    Item = x.Item
-                })
-                .ToList();
+            //        if (!string.IsNullOrEmpty(i.FileName))
+            //        {
+            //            if (string.Equals(i.FileName, query, StringComparison.OrdinalIgnoreCase))
+            //                relevance += 50;
+            //            else if (i.FileName.StartsWith(query, StringComparison.OrdinalIgnoreCase))
+            //                relevance += 20;
+            //        }
+
+            //        return new
+            //        {
+            //            Item = i,
+            //            TotalScore = i.Score + relevance
+            //        };
+            //    })
+            //    .OrderByDescending(x => x.TotalScore)
+            //    .Take(3)
+            //    .Select(x => new SearchResultItem
+            //    {
+            //        Display = $"{x.Item.FileName} – {x.Item.Type} - {relevance + x.TotalScore}",
+            //        Item = x.Item
+            //    })
+            //    .ToList();
 
             if (results.Any())
             {

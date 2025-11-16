@@ -56,6 +56,7 @@ namespace QuickLaunch.UI
         private void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<ScoringService>();
+            services.AddSingleton<SearchService>();
             services.AddSingleton<ConfigService>();
             services.AddSingleton<FileIndexer>();
             services.AddTransient<MainWindow>();

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using QuickLaunch.Core.Models;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,8 +8,64 @@ using System.Threading.Tasks;
 
 namespace QuickLaunch.Core.Services
 {
-    public static class SearchService
+    public class SearchService
     {
+        private readonly FileIndexer _indexer;
+
+        public SearchService(FileIndexer fileIndexer)
+        {
+            _indexer = fileIndexer;
+        }
+
+        public List<SearchResultItem> SearchItem(string query)
+        {
+            int relevance = 0;
+
+            var results = _indexer.Items
+                .Where(i =>
+                    !string.IsNullOrEmpty(i.FileName) && (
+                        i.FileName.Contains(query, StringComparison.OrdinalIgnoreCase)
+                        || (!string.IsNullOrEmpty(i.Desc) &&
+                            i.Desc.Contains(query, StringComparison.OrdinalIgnoreCase))
+                        || SearchService.GetFuzzyScore(query, i.FileName) > 50
+                        || (!string.IsNullOrEmpty(i.Desc) &&
+                            SearchService.GetFuzzyScore(query, i.Desc) > 50)
+                    )
+                )
+                .Select(i =>
+                {
+                    int nameScore = SearchService.GetFuzzyScore(query, i.FileName);
+                    int descScore = string.IsNullOrEmpty(i.Desc) ? 0 : SearchService.GetFuzzyScore(query, i.Desc);
+
+                    int relevance = Math.Max(nameScore, descScore);
+
+                    if (string.Equals(i.FileName, query, StringComparison.OrdinalIgnoreCase))
+                        relevance += 50;
+                    else if (i.FileName.StartsWith(query, StringComparison.OrdinalIgnoreCase))
+                        relevance += 20;
+
+                    return new
+                    {
+                        Item = i,
+                        TotalScore = i.Score + relevance,
+                        Relevance = relevance
+                    };
+                })
+                .OrderByDescending(x => x.TotalScore)
+                .Take(3)
+                .Select(x => new SearchResultItem
+                {
+                    Display = $"{(string.IsNullOrWhiteSpace(x.Item.Desc)
+                                    ? x.Item.FileName
+                                    : x.Item.Desc)} – {x.Item.Type} - {x.TotalScore}",
+                    Item = x.Item
+                })
+                .ToList();
+
+
+            return results;
+        }
+
         public static int LevenshteinDistance(string s, string t)
         {
             if (string.IsNullOrEmpty(s)) return t.Length;

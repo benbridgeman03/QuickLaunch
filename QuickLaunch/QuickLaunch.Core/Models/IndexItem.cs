@@ -18,6 +18,7 @@ namespace QuickLaunch.Core.Models
     {
         public string? FileName { get; set; }
         public required string FullName { get; set; }
+        public string? Desc {  get; set; }
         public required string Path { get; set; }
         public required ItemType Type { get; set; }
         public DateTime LastModified { get; set; }
