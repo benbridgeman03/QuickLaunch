@@ -207,6 +207,7 @@ namespace QuickLaunch.UI.Views
             else
             {
                 Hide();
+                SearchTextBox.Text = "";
             }
         }
         protected override void OnClosed(EventArgs e)
