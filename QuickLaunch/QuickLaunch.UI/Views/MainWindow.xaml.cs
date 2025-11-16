@@ -100,6 +100,44 @@ namespace QuickLaunch.UI.Views
             }
         }
 
+        private void SearchTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (SearchResults.Visibility != Visibility.Visible || SearchResults.Items.Count == 0)
+                return;
+
+            int selectedIndex = SearchResults.SelectedIndex;
+
+            switch (e.Key)
+            {
+                case Key.Down:
+                    if (selectedIndex < SearchResults.Items.Count - 1)
+                        SearchResults.SelectedIndex = selectedIndex + 1;
+                    else
+                        SearchResults.SelectedIndex = 0;
+                    SearchResults.ScrollIntoView(SearchResults.SelectedItem);
+                    e.Handled = true;
+                    break;
+
+                case Key.Up:
+                    if (selectedIndex > 0)
+                        SearchResults.SelectedIndex = selectedIndex - 1;
+                    else
+                        SearchResults.SelectedIndex = SearchResults.Items.Count - 1;
+                    SearchResults.ScrollIntoView(SearchResults.SelectedItem);
+                    e.Handled = true;
+                    break;
+
+                case Key.Enter:
+                    if (SearchResults.SelectedItem != null)
+                    {
+                        SearchResults_MouseLeftButtonUp(SearchResults, null);
+                    }
+                    e.Handled = true;
+                    break;
+            }
+        }
+
+
         private void SearchResults_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             if (SearchResults.SelectedItem is SearchResultItem selected)
@@ -163,9 +201,6 @@ namespace QuickLaunch.UI.Views
                 }
             }
         }
-
-
-
 
         protected override void OnSourceInitialized(EventArgs e)
         {

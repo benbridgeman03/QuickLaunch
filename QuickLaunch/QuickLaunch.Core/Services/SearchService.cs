@@ -52,7 +52,7 @@ namespace QuickLaunch.Core.Services
                     };
                 })
                 .OrderByDescending(x => x.TotalScore)
-                .Take(3)
+                .Take(10)
                 .Select(x => new SearchResultItem
                 {
                     Display = $"{(string.IsNullOrWhiteSpace(x.Item.Desc)

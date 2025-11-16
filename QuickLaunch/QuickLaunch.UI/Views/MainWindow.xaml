@@ -8,7 +8,7 @@
                 <Border CornerRadius="20" Background="#66FFFFFF" BorderThickness="1" Height="50" HorizontalAlignment="Stretch">
                     <Grid>
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="" FontSize="32" Foreground="Black" VerticalAlignment="Center" Margin="10,0,0,0"/>
-                        <TextBox x:Name="SearchTextBox" Background="Transparent" BorderThickness="0" VerticalContentAlignment="Center" FontSize="32" Foreground="Black" Padding="50,0,10,0" TextChanged="SearchTextBox_TextChanged"/>
+                        <TextBox x:Name="SearchTextBox" Background="Transparent" BorderThickness="0" VerticalContentAlignment="Center" FontSize="32" Foreground="Black" Padding="50,0,10,0" TextChanged="SearchTextBox_TextChanged" PreviewKeyDown="SearchTextBox_PreviewKeyDown"/>
                         <TextBlock x:Name="PlaceholderText" Text="Search..." Foreground="Gray" FontSize="32" VerticalAlignment="Center" Margin="50,0,0,0" IsHitTestVisible="False"/>
                     </Grid>
                 </Border>
@@ -16,7 +16,7 @@
         </Border>
         <ListBox 
             x:Name="SearchResults"
-            MaxHeight="300"
+            MaxHeight="180"
             Margin="40,90,40,0"
             Visibility="Collapsed"
             Background="White"
@@ -24,7 +24,9 @@
             Padding="0"
             DisplayMemberPath="Display"
             Width="{Binding ElementName=MainBorder, Path=ActualWidth}"
-            MouseLeftButtonUp="SearchResults_MouseLeftButtonUp">
+            MouseLeftButtonUp="SearchResults_MouseLeftButtonUp"
+            ScrollViewer.VerticalScrollBarVisibility="Auto"
+            ScrollViewer.HorizontalScrollBarVisibility="Disabled">
             <ListBox.Effect>
                 <DropShadowEffect 
                     BlurRadius="15"
@@ -42,7 +44,7 @@
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="ListBoxItem">
-                                <Grid Margin="0,0,0,10">
+                                <Grid Margin="0">
                                     <Border 
                                         x:Name="HoverBorder"
                                         Background="Transparent"
