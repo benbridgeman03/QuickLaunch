@@ -36,6 +36,7 @@ namespace QuickLaunch.Core
                 .Select(e => e.ToLower())
                 .ToHashSet();
         }
+
         public void LoadExistingIndex(string jsonPath)
         {
             if (!File.Exists(jsonPath))
@@ -55,6 +56,7 @@ namespace QuickLaunch.Core
                 _previousIndex = new();
             }
         }
+
         public async Task BuildIndexAsync(string rootPath)
         {
             LoadExistingIndex("index.json");
@@ -142,9 +144,18 @@ namespace QuickLaunch.Core
 
                 _previousIndex.TryGetValue(info.FullName, out var oldEntry);
 
+                if (oldEntry != null && oldEntry.LastModified == info.LastWriteTime)
+                {
+                    string keyOld = oldEntry.FileName.ToLowerInvariant();
+                    _itemsByPath.AddOrUpdate(keyOld, oldEntry, (_, existing) => oldEntry);
+                    continue;
+                }
+
                 string? description = oldEntry?.Desc;
 
-                if (description == null && ext == ".exe")
+                if (oldEntry != null)
+                    description = oldEntry.Desc;
+                else if (description == null && ext == ".exe")
                 {
                     try
                     {
@@ -171,7 +182,8 @@ namespace QuickLaunch.Core
                 _itemsByPath.AddOrUpdate(key, item, (_, existing) => item.Score > existing.Score ? item : existing);
             }
 
-            return folderHasAllowed;
+
+            return true;
         }
 
         private static bool IsHiddenOrSystem(FileSystemInfo info)
