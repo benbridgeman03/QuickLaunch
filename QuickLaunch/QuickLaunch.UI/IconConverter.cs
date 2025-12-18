@@ -31,3 +31,4 @@ namespace QuickLaunch.UI.Converters
             throw new NotImplementedException();
         }
     }
+}
