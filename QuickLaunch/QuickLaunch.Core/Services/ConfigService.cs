@@ -17,16 +17,7 @@ namespace QuickLaunch.Core.Services
 
         public ConfigService()
         {
-            string appDir = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "QuickLaunch"
-            );
-
-            Directory.CreateDirectory(appDir);
-
-            _configPath = Path.Combine(appDir, "config.json");
-
-            Load();
+            Config = QuickLaunchConfig.Load();
         }
 
         public void Load()

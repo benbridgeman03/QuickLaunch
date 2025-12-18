@@ -1,0 +1,42 @@
+﻿<Window x:Class="QuickLaunch.UI.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Settings" Height="400" Width="600"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent">
+
+
+    <Border CornerRadius="15" Background="White" BorderBrush="Gray" BorderThickness="1">
+        <Grid Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="Search Paths" FontSize="24" FontWeight="SemiBold" Margin="0,0,0,15"/>
+
+            <ListBox x:Name="PathsListBox" Grid.Row="1" Margin="0,0,0,15" BorderThickness="1" BorderBrush="#EEEEEE">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding}" VerticalAlignment="Center" FontSize="14"/>
+                            <Button Grid.Column="1" Content="✕" Width="30" Height="30" 
+                                    Background="Transparent" BorderThickness="0" Foreground="Red"
+                                    Cursor="Hand" Click="RemovePath_Click" Tag="{Binding}"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Add Folder" Click="AddFolder_Click" Padding="15,8" Margin="0,0,10,0" Background="#DDDDDD" BorderThickness="0"/>
+                <Button Content="Save &amp; Close" Click="SaveClose_Click" Padding="15,8" Background="Black" Foreground="White" BorderThickness="0"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

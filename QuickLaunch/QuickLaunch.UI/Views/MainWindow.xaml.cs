@@ -11,10 +11,6 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Path = System.IO.Path;
 
 namespace QuickLaunch.UI.Views
@@ -27,6 +23,7 @@ namespace QuickLaunch.UI.Views
     {
         private readonly FileIndexer _indexer;
         private readonly SearchService _search;
+        private readonly ConfigService _configService;
 
         [DllImport("user32.dll")]
         private static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
@@ -41,12 +38,13 @@ namespace QuickLaunch.UI.Views
         private const int WM_HOTKEY = 0x0312;
 
 
-        public MainWindow(FileIndexer indexer, SearchService search)
+        public MainWindow(FileIndexer indexer, SearchService search, ConfigService configService)
         {
             InitializeComponent();
 
             _indexer = indexer;
             _search = search;
+            _configService = configService;
 
             SearchTextBox.TextChanged += (s, e) =>
             {
@@ -100,7 +98,7 @@ namespace QuickLaunch.UI.Views
             }
         }
 
-        private void SearchTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        private void SearchTextBox_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (SearchResults.Visibility != Visibility.Visible || SearchResults.Items.Count == 0)
                 return;
@@ -200,6 +198,17 @@ namespace QuickLaunch.UI.Views
                     Debug.WriteLine($"Failed to open item: {ex.Message}");
                 }
             }
+        }
+
+        private void OpenSettings_Click(object sender, RoutedEventArgs e)
+        {
+            var settingsWin = new SettingsWindow(_configService.Config, _indexer);
+
+            this.Opacity = 0.5;
+
+            settingsWin.ShowDialog();
+
+            this.Opacity = 1.0;
         }
 
         protected override void OnSourceInitialized(EventArgs e)

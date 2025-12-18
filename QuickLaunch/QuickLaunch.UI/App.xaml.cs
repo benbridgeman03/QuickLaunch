@@ -14,7 +14,7 @@ namespace QuickLaunch.UI
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
-    public partial class App : Application
+    public partial class App : System.Windows.Application
     {
         public IServiceProvider Services { get; private set; }
 
@@ -40,16 +40,22 @@ namespace QuickLaunch.UI
 
             await Task.Run(async () =>
             {
+                Debug.WriteLine("--- Starting Indexing ---");
+
+                indexer.Initialize("index.json");
+
+                await indexer.IndexUwpAppsAsync();
+
                 Debug.WriteLine("SEARCH PATH COUNT = " + config.Config.SearchPaths.Count);
                 foreach (var path in config.Config.SearchPaths)
                 {
-                    Debug.WriteLine($"{path}");
-                    if (Directory.Exists(path))
-                        await indexer.BuildIndexAsync($"{path}");
-                    else Debug.WriteLine($"Folder does not exist - {path}");
+                    Debug.WriteLine($"Indexing: {path}");
+                    await indexer.IndexDirectoryAsync(path);
                 }
 
                 indexer.SaveToJson("index.json");
+
+                Debug.WriteLine("--- Indexing Complete ---");
             });
         }
 

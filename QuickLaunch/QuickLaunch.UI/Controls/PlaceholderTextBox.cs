@@ -8,7 +8,7 @@ using System.Windows.Controls;
 
 namespace QuickLaunch.UI.Controls
 {
-    public class PlaceholderTextBox : TextBox
+    public class PlaceholderTextBox : System.Windows.Controls.TextBox
     {
         public static readonly DependencyProperty PlaceholderProperty =
             DependencyProperty.Register(nameof(Placeholder), typeof(string), typeof(PlaceholderTextBox), new PropertyMetadata(string.Empty));
@@ -28,9 +28,9 @@ namespace QuickLaunch.UI.Controls
         private void UpdatePlaceholderVisibility()
         {
             if (string.IsNullOrEmpty(Text))
-                Foreground = SystemColors.GrayTextBrush;
+                Foreground = System.Windows.SystemColors.GrayTextBrush;
             else
-                Foreground = SystemColors.ControlTextBrush;
+                Foreground = System.Windows.SystemColors.ControlTextBrush;
         }
     }
 }

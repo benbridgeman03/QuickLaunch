@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
+using System.Text.Json;
 
 namespace QuickLaunch.Core.Models
 {
     public class QuickLaunchConfig
     {
+        private static string ConfigPath => Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "QuickLaunch",
+            "config.json");
+
         public List<string> AllowedExtensions { get; set; } = new()
         {
             ".exe", ".lnk", ".bat", ".cmd", ".ps1",
@@ -18,26 +22,42 @@ namespace QuickLaunch.Core.Models
         {
             Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
             Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-            Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
-            Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments),
             Environment.GetFolderPath(Environment.SpecialFolder.Programs),
         };
 
-        public HashSet<string> IgnoredFolders = new(StringComparer.OrdinalIgnoreCase)
+        public HashSet<string> IgnoredFolders { get; set; } = new(StringComparer.OrdinalIgnoreCase)
         {
-            "library",
-            "packagecache",
-            "temp",
-            "obj",
-            "build",
-            "logs",
-            "node_modules",
-            ".git",
-            ".idea",
-            ".vscode",
-            "bin",
-            "obj",
-            "Recent"
+            "node_modules", ".git", "bin", "obj", "temp"
         };
+
+
+        public static QuickLaunchConfig Load()
+        {
+            if (!File.Exists(ConfigPath))
+            {
+                var defaults = new QuickLaunchConfig();
+                defaults.Save();
+                return defaults;
+            }
+
+            try
+            {
+                var json = File.ReadAllText(ConfigPath);
+                return JsonSerializer.Deserialize<QuickLaunchConfig>(json) ?? new QuickLaunchConfig();
+            }
+            catch
+            {
+                return new QuickLaunchConfig();
+            }
+        }
+
+        public void Save()
+        {
+            var dir = Path.GetDirectoryName(ConfigPath);
+            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+
+            var json = JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(ConfigPath, json);
+        }
     }
 }
