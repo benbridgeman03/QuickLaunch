@@ -1,60 +1,85 @@
 # QuickLaunch
 
-**_Work in progress_**
+> **Work in Progress**
 
-QuickLaunch is a small tool designed to replace the unreliable Windows Search experience. Windows’ built-in search is slow, inconsistent, and often can’t find apps or files you actually use. QuickLaunch aims to be a faster, no-nonsense way to open programs and locate files without the usual hassle.
-
----
-
-## What QuickLaunch Is For
-
--  Quickly launching apps  
--  Finding files/folders without waiting  
--  Keeping everything fast, simple, and predictable  
+QuickLaunch is a lightweight launcher built to replace the unreliable Windows Search experience. Windows’ built-in search is often slow, inconsistent, and fails to surface apps or files you use every day. QuickLaunch focuses on speed, simplicity, and predictable results.
 
 ---
 
-## User Guide
-1. Launching
-Toggle: Press Ctrl + Space to show or hide the search bar.
+## Purpose
 
-The window centers itself on your screen automatically.
+QuickLaunch is designed for:
 
-2. Searching & Navigation
-Start typing to see results instantly.
-
-Use Up and Down arrow keys to navigate the list.
-
-Press Enter to launch the selected item.
-
-Press Esc to clear the text or close the launcher.
-
-3. Context Menu (Right-Click)
-Right-click on any search result to see more options:
-
-Open File Location: Opens Windows Explorer with the specific file highlighted.
-
-Hide from Results: Instantly removes the item from the list.
-
-If it is an App: Bans the app name globally (removes all shortcuts/exes for that app).
-
-If it is a File: Bans that specific file path only.
-
-4. Settings
-Click the Gear Icon on the right side of the search bar to open Settings.
-
-Search Paths Tab:
-
-View which folders are being scanned.
-
-Add Folder: Click to browse and include a new directory in your search index.
-
-Remove (X): Stop indexing a folder and wipe its files from memory.
-
-Hidden Files Tab:
-
-View a list of all apps and files you have hidden.
-
-Click the Red X to unhide them. (Note: They will reappear after the next app restart or re-scan).
+- Fast application launching  
+- Instant file and folder discovery  
+- A minimal, distraction-free workflow  
 
 ---
+
+## Features
+
+- Global hotkey launcher  
+- Real-time search results  
+- Keyboard-first navigation  
+- Configurable search paths  
+- Granular hiding and filtering of results  
+
+---
+
+## Usage Guide
+
+### 1. Launching QuickLaunch
+
+- **Toggle launcher:** `Ctrl + Space`
+- The search window automatically centers on your screen.
+
+---
+
+### 2. Searching and Navigation
+
+- Start typing to see results instantly.
+- Use the **Up** and **Down** arrow keys to navigate results.
+- Press **Enter** to open the selected item.
+- Press **Esc** to clear the search or close the launcher.
+
+---
+
+### 3. Context Menu (Right-Click)
+
+Right-click any search result to access additional actions:
+
+- **Open File Location**  
+  Opens Windows Explorer with the item highlighted.
+
+- **Hide from Results**  
+  Removes the item from search results.
+
+  - **Applications:**  
+    Hides the app globally (all related shortcuts and executables).
+  - **Files:**  
+    Hides only the specific file path.
+
+---
+
+### 4. Settings
+
+Click the **gear icon** on the right side of the search bar to open the Settings window.
+
+#### Search Paths
+
+- View all folders currently indexed by QuickLaunch.
+- **Add Folder:** Browse and include a new directory in the search index.
+- **Remove (X):** Stop indexing a folder and remove its files from memory.
+
+#### Hidden Items
+
+- View all hidden apps and files.
+- Click the **red X** to unhide an item.
+
+> Note: Unhidden items will reappear after the next application restart or re-scan.
+
+---
+
+## Status
+
+QuickLaunch is actively being developed. Features, behavior, and performance are subject to change.
