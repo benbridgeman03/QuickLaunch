@@ -211,6 +211,28 @@ namespace QuickLaunch.UI.Views
             this.Opacity = 1.0;
         }
 
+        private void OpenFileLocation_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuItem menuItem && menuItem.Tag is string path)
+            {
+                if (string.IsNullOrEmpty(path)) return;
+
+                try
+                {
+                    if (File.Exists(path) || Directory.Exists(path))
+                    {
+                        Process.Start("explorer.exe", $"/select,\"{path}\"");
+
+                        ToggleLauncher();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Failed to open file location: {ex.Message}");
+                }
+            }
+        }
+
         protected override void OnSourceInitialized(EventArgs e)
         {
             base.OnSourceInitialized(e);

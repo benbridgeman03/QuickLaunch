@@ -14,13 +14,13 @@ namespace QuickLaunch.UI.Converters
                 return type switch
                 {
                     // Folder (Standard)
-                    ItemType.Directory => "\uE8B7",
+                    ItemType.Directory => "\uED25",
 
                     ItemType.Exe => "\uE74C",
                     ItemType.Shortcut => "\uE74C",
                     ItemType.UWP => "\uE74C",
 
-                    _ => "\uE8A5"
+                    _ => "\uE7C3"
                 };
             }
             return "\uE8A5";

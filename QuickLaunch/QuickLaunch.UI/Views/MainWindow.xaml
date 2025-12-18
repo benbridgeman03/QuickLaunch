@@ -74,7 +74,22 @@
 
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <Grid Margin="5,4">
+                    <Grid Margin="5,4" Background="Transparent">
+
+                        <Grid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Open File Location" 
+                          Click="OpenFileLocation_Click" 
+                          Tag="{Binding Item.Path}">
+                                    <MenuItem.Icon>
+                                        <TextBlock FontFamily="Segoe MDL2 Assets" 
+                                           Text="&#xE8A7;" 
+                                           FontSize="16"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </Grid.ContextMenu>
+
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
@@ -83,23 +98,23 @@
 
                         <Border Grid.Column="0" Width="40" Height="40" CornerRadius="10" Background="#F0F0F0" Margin="0,0,15,0">
                             <TextBlock Text="{Binding Item.Type, Converter={StaticResource IconConverter}}" 
-                                       FontFamily="Segoe MDL2 Assets" 
-                                       FontSize="20" 
-                                       VerticalAlignment="Center" 
-                                       HorizontalAlignment="Center" 
-                                       Foreground="#555555"/>
+                               FontFamily="Segoe MDL2 Assets" 
+                               FontSize="20" 
+                               VerticalAlignment="Center" 
+                               HorizontalAlignment="Center" 
+                               Foreground="#555555"/>
                         </Border>
 
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                             <TextBlock Text="{Binding Item.FileName}" 
-                                       FontSize="18" 
-                                       FontWeight="SemiBold" 
-                                       Foreground="#333333"/>
+                       FontSize="18" 
+                       FontWeight="SemiBold" 
+                       Foreground="#333333"/>
 
                             <TextBlock Text="{Binding Item.Path}" 
-                                       FontSize="12" 
-                                       Foreground="#999999" 
-                                       TextTrimming="CharacterEllipsis"/>
+                       FontSize="12" 
+                       Foreground="#999999" 
+                       TextTrimming="CharacterEllipsis"/>
                         </StackPanel>
                     </Grid>
                 </DataTemplate>

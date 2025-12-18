@@ -15,7 +15,7 @@ namespace QuickLaunch.Core.Models
         public List<string> AllowedExtensions { get; set; } = new()
         {
             ".exe", ".lnk", ".bat", ".cmd", ".ps1",
-            ".txt", ".pdf", ".docx", ".xlsx", ".pptx", ".url"
+            ".txt", ".pdf", ".docx", ".xlsx", ".pptx", ".url", ".xls"
         };
 
         public List<string> SearchPaths { get; set; } = new()
