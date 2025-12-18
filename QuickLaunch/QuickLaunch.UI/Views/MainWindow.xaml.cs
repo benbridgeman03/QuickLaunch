@@ -233,6 +233,41 @@ namespace QuickLaunch.UI.Views
             }
         }
 
+        private void HideFile_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuItem menuItem && menuItem.Tag is IndexItem item)
+            {
+                bool isApp = item.Type == ItemType.Exe ||
+                             item.Type == ItemType.Shortcut ||
+                             item.Type == ItemType.UWP;
+
+                if (isApp)
+                {
+                    string nameToHide = item.FileName;
+
+                    if (!_configService.Config.HiddenAppNames.Contains(nameToHide))
+                    {
+                        _configService.Config.HiddenAppNames.Add(nameToHide);
+                        _configService.Config.Save();
+                    }
+
+                    _indexer.RemoveItemsByName(nameToHide);
+                }
+                else
+                {
+                    if (!_configService.Config.HiddenFiles.Contains(item.Path))
+                    {
+                        _configService.Config.HiddenFiles.Add(item.Path);
+                        _configService.Config.Save();
+                    }
+
+                    _indexer.RemovePath(item.Path);
+                }
+
+                SearchTextBox_TextChanged(SearchTextBox, null);
+            }
+        }
+
         protected override void OnSourceInitialized(EventArgs e)
         {
             base.OnSourceInitialized(e);

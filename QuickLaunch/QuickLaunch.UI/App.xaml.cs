@@ -40,7 +40,6 @@ namespace QuickLaunch.UI
 
             await Task.Run(async () =>
             {
-                Debug.WriteLine("--- Starting Indexing ---");
 
                 indexer.Initialize("index.json");
 
@@ -54,8 +53,6 @@ namespace QuickLaunch.UI
                 }
 
                 indexer.SaveToJson("index.json");
-
-                Debug.WriteLine("--- Indexing Complete ---");
             });
         }
 

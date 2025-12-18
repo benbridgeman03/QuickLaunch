@@ -14,28 +14,98 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Text="Search Paths" FontSize="24" FontWeight="SemiBold" Margin="0,0,0,15"/>
+            <TextBlock Text="Settings" FontSize="24" FontWeight="SemiBold" Margin="0,0,0,15"/>
 
-            <ListBox x:Name="PathsListBox" Grid.Row="1" Margin="0,0,0,15" BorderThickness="1" BorderBrush="#EEEEEE">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <Grid Margin="0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="{Binding}" VerticalAlignment="Center" FontSize="14"/>
-                            <Button Grid.Column="1" Content="✕" Width="30" Height="30" 
-                                    Background="Transparent" BorderThickness="0" Foreground="Red"
-                                    Cursor="Hand" Click="RemovePath_Click" Tag="{Binding}"/>
-                        </Grid>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+            <TabControl Grid.Row="1" Margin="0,0,0,15" BorderThickness="0" Background="Transparent">
+                <TabControl.Resources>
+                    <Style TargetType="TabItem">
+                        <Setter Property="FontSize" Value="14"/>
+                        <Setter Property="Padding" Value="10,5"/>
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="TabItem">
+                                    <Grid>
+                                        <Border x:Name="Border" Background="{TemplateBinding Background}" BorderBrush="Gray" BorderThickness="0,0,0,1" Margin="0,0,5,0" Padding="12,8">
+                                            <ContentPresenter ContentSource="Header" HorizontalAlignment="Center"/>
+                                        </Border>
+                                    </Grid>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="Border" Property="BorderBrush" Value="Black"/>
+                                            <Setter TargetName="Border" Property="BorderThickness" Value="0,0,0,2"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </TabControl.Resources>
+
+                <TabItem Header="Search Paths">
+                    <Grid Margin="0,15,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <ListBox x:Name="PathsListBox" BorderThickness="1" BorderBrush="#EEEEEE">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,5">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding}" VerticalAlignment="Center" FontSize="14" Margin="5,0"/>
+                                        <Button Grid.Column="1" Content="✕" Width="30" Height="30" 
+                                        Background="Transparent" BorderThickness="0" Foreground="Red"
+                                        Cursor="Hand" Click="RemovePath_Click" Tag="{Binding}"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <Button Grid.Row="1" Content="Add Folder" Click="AddFolder_Click" 
+                        HorizontalAlignment="Right" Margin="0,10,0,0"
+                        Padding="15,8" Background="#F0F0F0" BorderThickness="0"/>
+                    </Grid>
+                </TabItem>
+
+                <TabItem Header="Hidden Files">
+                    <Grid Margin="0,15,0,0">
+                        <TextBlock Text="These files will not appear in search results." 
+                           Foreground="Gray" VerticalAlignment="Top" Margin="0,-25,0,0" HorizontalAlignment="Right" FontSize="10"/>
+
+                        <ListBox x:Name="HiddenFilesListBox" BorderThickness="1" BorderBrush="#EEEEEE">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,5">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding}" VerticalAlignment="Center" FontSize="14" Margin="5,0" TextTrimming="CharacterEllipsis"/>
+                                        <Button Grid.Column="1" Content="✕" Width="30" Height="30" 
+                                        Background="Transparent" BorderThickness="0" Foreground="Red"
+                                        Cursor="Hand" Click="UnhideFile_Click" Tag="{Binding}"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
+                </TabItem>
+            </TabControl>
 
             <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Content="Add Folder" Click="AddFolder_Click" Padding="15,8" Margin="0,0,10,0" Background="#DDDDDD" BorderThickness="0"/>
-                <Button Content="Save &amp; Close" Click="SaveClose_Click" Padding="15,8" Background="Black" Foreground="White" BorderThickness="0"/>
+                <Button Content="Save &amp; Close" Click="SaveClose_Click" Padding="20,10" Background="Black" Foreground="White" BorderThickness="0">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="5"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
             </StackPanel>
         </Grid>
     </Border>

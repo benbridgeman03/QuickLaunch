@@ -1,5 +1,6 @@
 ﻿using QuickLaunch.Core; // For FileIndexer
 using QuickLaunch.Core.Models;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using WinForms = System.Windows.Forms;
@@ -9,9 +10,9 @@ namespace QuickLaunch.UI.Views
     public partial class SettingsWindow : Window
     {
         private QuickLaunchConfig _config;
-        private FileIndexer _indexer; // Store the indexer
+        private FileIndexer _indexer;
+        private bool _requiresRescan = false;
 
-        // Update Constructor to accept FileIndexer
         public SettingsWindow(QuickLaunchConfig config, FileIndexer indexer)
         {
             InitializeComponent();
@@ -23,7 +24,18 @@ namespace QuickLaunch.UI.Views
         private void RefreshList()
         {
             PathsListBox.ItemsSource = null;
-            PathsListBox.ItemsSource = _config.SearchPaths;
+            PathsListBox.ItemsSource = _config.SearchPaths.ToList();
+
+            var allHidden = new List<string>();
+
+            if (_config.HiddenAppNames != null)
+                allHidden.AddRange(_config.HiddenAppNames);
+
+            if (_config.HiddenFiles != null)
+                allHidden.AddRange(_config.HiddenFiles);
+
+            HiddenFilesListBox.ItemsSource = null;
+            HiddenFilesListBox.ItemsSource = allHidden;
         }
 
         private async void AddFolder_Click(object sender, RoutedEventArgs e)
@@ -57,10 +69,46 @@ namespace QuickLaunch.UI.Views
             }
         }
 
+        private void UnhideFile_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is System.Windows.Controls.Button btn && btn.Tag is string itemToUnhide)
+            {
+                bool changed = false;
+
+
+                if (_config.HiddenAppNames != null && _config.HiddenAppNames.Contains(itemToUnhide))
+                {
+                    _config.HiddenAppNames.Remove(itemToUnhide);
+                    changed = true;
+                }
+
+                if (_config.HiddenFiles != null && _config.HiddenFiles.Contains(itemToUnhide))
+                {
+                    _config.HiddenFiles.Remove(itemToUnhide);
+                    changed = true;
+                }
+
+                if (changed)
+                {
+                    RefreshList();
+                    _requiresRescan = true;
+                }
+            }
+        }
+
         private void SaveClose_Click(object sender, RoutedEventArgs e)
         {
+  
+            if (sender is System.Windows.Controls.Button btn) btn.IsEnabled = false;
+
             _config.Save();
             _indexer.SaveToJson("index.json");
+
+            if (_requiresRescan)
+            {
+                Task.Run(() => _indexer.FullScanAsync());
+            }
+
             this.Close();
         }
     }

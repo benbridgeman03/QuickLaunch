@@ -78,13 +78,15 @@
 
                         <Grid.ContextMenu>
                             <ContextMenu>
-                                <MenuItem Header="Open File Location" 
-                          Click="OpenFileLocation_Click" 
-                          Tag="{Binding Item.Path}">
+                                <MenuItem Header="Open File Location" Click="OpenFileLocation_Click" Tag="{Binding Item.Path}">
                                     <MenuItem.Icon>
-                                        <TextBlock FontFamily="Segoe MDL2 Assets" 
-                                           Text="&#xE8A7;" 
-                                           FontSize="16"/>
+                                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8A7;" FontSize="16"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+
+                                <MenuItem Header="Hide from Results" Click="HideFile_Click" Tag="{Binding Item}">
+                                    <MenuItem.Icon>
+                                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8BB;" FontSize="16"/>
                                     </MenuItem.Icon>
                                 </MenuItem>
                             </ContextMenu>

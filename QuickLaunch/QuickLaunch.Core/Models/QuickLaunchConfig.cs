@@ -7,6 +7,10 @@ namespace QuickLaunch.Core.Models
 {
     public class QuickLaunchConfig
     {
+        public HashSet<string> HiddenFiles { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public HashSet<string> HiddenAppNames { get; set; } = new(StringComparer.OrdinalIgnoreCase); 
+
+
         private static string ConfigPath => Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "QuickLaunch",

@@ -19,19 +19,35 @@ namespace QuickLaunch.Core
         private readonly HashSet<string> _ignoredFolders;
         private readonly ConfigService _config;
         private readonly ScoringService _score;
+        private readonly ConfigService _configService;
         private string _rootFolder = "";
 
-        public FileIndexer(ConfigService config, ScoringService score)
+        public FileIndexer(ConfigService config, ScoringService score, ConfigService configService)
         {
             _config = config;
             _score = score;
             _allowed = config.Config.AllowedExtensions.Select(e => e.ToLower()).ToHashSet();
             _ignoredFolders = config.Config.IgnoredFolders.Select(e => e.ToLower()).ToHashSet();
+            _configService = configService;
         }
 
         public void Initialize(string jsonPath)
         {
             LoadExistingIndex(jsonPath);
+        }
+
+        public async Task FullScanAsync()
+        {
+            await IndexUwpAppsAsync();
+
+            var searchPaths = _configService.Config.SearchPaths;
+            foreach (var path in searchPaths)
+            {
+                if (Directory.Exists(path))
+                {
+                    await IndexDirectoryAsync(path);
+                }
+            }
         }
 
         public async Task IndexUwpAppsAsync()
@@ -131,7 +147,10 @@ namespace QuickLaunch.Core
                 foreach (var dir in Directory.EnumerateDirectories(path))
                 {
                     var info = new DirectoryInfo(dir);
-                    if (IsHiddenOrSystem(info) || _ignoredFolders.Contains(info.Name.ToLower()))
+
+                    if (IsHiddenOrSystem(info) ||
+                        _ignoredFolders.Contains(info.Name.ToLower()) ||
+                        _config.Config.HiddenFiles.Contains(info.FullName))
                         continue;
 
                     var dirItem = new IndexItem
@@ -153,7 +172,16 @@ namespace QuickLaunch.Core
                 foreach (var file in Directory.EnumerateFiles(path))
                 {
                     var info = new FileInfo(file);
+                    string nameNoExt = Path.GetFileNameWithoutExtension(info.Name);
                     string ext = info.Extension.ToLower();
+
+                    if (_config.Config.HiddenFiles.Contains(info.FullName))
+                        continue;
+
+                    bool isApp = ext == ".exe" || ext == ".lnk" || ext == ".url";
+
+                    if (isApp && _config.Config.HiddenAppNames.Contains(nameNoExt))
+                        continue;
 
                     if (!_allowed.Contains(ext) || IsFilteredSystem32(file))
                         continue;
@@ -197,6 +225,7 @@ namespace QuickLaunch.Core
                 return false;
             }
         }
+
         private void IndexUwpApps()
         {
             try
@@ -209,6 +238,8 @@ namespace QuickLaunch.Core
                 {
                     string appName = item.Name;
                     if (string.IsNullOrWhiteSpace(appName)) continue;
+
+                    if(_config.Config.HiddenAppNames.Contains(appName)) continue;
 
                     string appId = item.ExtendedProperty("System.AppUserModel.ID") as string;
                     if (string.IsNullOrEmpty(appId)) continue;
@@ -261,6 +292,29 @@ namespace QuickLaunch.Core
                 "taskmgr.exe","explorer.exe","snippingtool.exe"
             };
             return !allowed.Contains(name);
+        }
+
+        public void RemoveItemsByName(string name)
+        {
+            var keysToRemove = _itemsByPath
+                .Where(kvp =>
+                {
+                    var item = kvp.Value;
+                    bool nameMatches = item.FileName.Equals(name, StringComparison.OrdinalIgnoreCase);
+
+                    bool isApp = item.Type == ItemType.Exe ||
+                                 item.Type == ItemType.Shortcut ||
+                                 item.Type == ItemType.UWP;
+
+                    return nameMatches && isApp;
+                })
+                .Select(kvp => kvp.Key)
+                .ToList();
+
+            foreach (var key in keysToRemove)
+            {
+                _itemsByPath.TryRemove(key, out _);
+            }
         }
     }
 }
