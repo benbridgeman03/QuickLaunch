@@ -17,7 +17,7 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <Border CornerRadius="27" Background="#F4F4F4" BorderThickness="0" Height="54" HorizontalAlignment="Stretch">
+                <Border CornerRadius="27" Background="White" BorderThickness="0" Height="54" HorizontalAlignment="Stretch">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
