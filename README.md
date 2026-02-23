@@ -12,7 +12,6 @@ QuickLaunch is designed for:
 
 - Fast application launching  
 - Instant file and folder discovery  
-- A minimal, distraction-free workflow  
 
 ---
 
@@ -20,9 +19,8 @@ QuickLaunch is designed for:
 
 - Global hotkey launcher  
 - Real-time search results  
-- Keyboard-first navigation  
 - Configurable search paths  
-- Granular hiding and filtering of results  
+- Hiding and filtering of results  
 
 ---
 
