@@ -99,7 +99,6 @@ namespace QuickLaunch.Core
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error loading index: {ex.Message}");
                 _previousIndex = new();
             }
         }
@@ -119,7 +118,6 @@ namespace QuickLaunch.Core
 
         public void SaveToJson(string filePath)
         {
-            Debug.WriteLine("Saving JSON");
             var sorted = _itemsByPath.Values.OrderByDescending(i => i.Score).ToList();
             var json = JsonSerializer.Serialize(sorted, new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(filePath, json);
@@ -135,7 +133,6 @@ namespace QuickLaunch.Core
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"ERROR in {current}: {ex.Message}");
                 }
             }
         }
@@ -228,41 +225,34 @@ namespace QuickLaunch.Core
 
         private void IndexUwpApps()
         {
-            try
-            {
-                Type shellType = Type.GetTypeFromProgID("Shell.Application");
-                dynamic shell = Activator.CreateInstance(shellType);
-                dynamic appsFolder = shell.NameSpace("shell:Appsfolder");
+            Type shellType = Type.GetTypeFromProgID("Shell.Application");
+            dynamic shell = Activator.CreateInstance(shellType);
+            dynamic appsFolder = shell.NameSpace("shell:Appsfolder");
 
-                foreach (dynamic item in appsFolder.Items())
+            foreach (dynamic item in appsFolder.Items())
+            {
+                string appName = item.Name;
+                if (string.IsNullOrWhiteSpace(appName)) continue;
+
+                if(_config.Config.HiddenAppNames.Contains(appName)) continue;
+
+                string appId = item.ExtendedProperty("System.AppUserModel.ID") as string;
+                if (string.IsNullOrEmpty(appId)) continue;
+
+                var uwpItem = new IndexItem
                 {
-                    string appName = item.Name;
-                    if (string.IsNullOrWhiteSpace(appName)) continue;
+                    FileName = appName,
+                    FullName = appName,
+                    Path = appId,
+                    Desc = "",
+                    Type = ItemType.UWP,
+                    LastModified = DateTime.Now,
+                    LastAccessed = DateTime.Now,
+                    Score = 150
+                };
 
-                    if(_config.Config.HiddenAppNames.Contains(appName)) continue;
-
-                    string appId = item.ExtendedProperty("System.AppUserModel.ID") as string;
-                    if (string.IsNullOrEmpty(appId)) continue;
-
-                    var uwpItem = new IndexItem
-                    {
-                        FileName = appName,
-                        FullName = appName,
-                        Path = appId,
-                        Desc = "",
-                        Type = ItemType.UWP,
-                        LastModified = DateTime.Now,
-                        LastAccessed = DateTime.Now,
-                        Score = 150
-                    };
-
-                    string key = uwpItem.FileName.ToLowerInvariant();
-                    _itemsByPath.AddOrUpdate(key, uwpItem, (_, existing) => uwpItem.Score > existing.Score ? uwpItem : existing);
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Failed to index UWP apps: {ex.Message}");
+                string key = uwpItem.FileName.ToLowerInvariant();
+                _itemsByPath.AddOrUpdate(key, uwpItem, (_, existing) => uwpItem.Score > existing.Score ? uwpItem : existing);
             }
         }
 

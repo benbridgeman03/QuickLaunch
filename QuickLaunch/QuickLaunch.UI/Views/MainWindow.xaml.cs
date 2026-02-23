@@ -195,7 +195,6 @@ namespace QuickLaunch.UI.Views
 
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Failed to open item: {ex.Message}");
                 }
             }
         }
@@ -228,7 +227,6 @@ namespace QuickLaunch.UI.Views
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Failed to open file location: {ex.Message}");
                 }
             }
         }

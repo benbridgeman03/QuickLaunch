@@ -45,10 +45,8 @@ namespace QuickLaunch.UI
 
                 await indexer.IndexUwpAppsAsync();
 
-                Debug.WriteLine("SEARCH PATH COUNT = " + config.Config.SearchPaths.Count);
                 foreach (var path in config.Config.SearchPaths)
                 {
-                    Debug.WriteLine($"Indexing: {path}");
                     await indexer.IndexDirectoryAsync(path);
                 }
 
