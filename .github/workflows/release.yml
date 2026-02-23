@@ -20,7 +20,7 @@ jobs:
         uses: microsoft/setup-msbuild@v2
 
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore --runtime win-x64
         working-directory: QuickLaunch
 
       - name: Build
