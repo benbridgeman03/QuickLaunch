@@ -18,12 +18,15 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
       - name: Restore dependencies
         run: dotnet restore
         working-directory: QuickLaunch
 
       - name: Build
-        run: dotnet build --no-restore --configuration Release
+        run: msbuild QuickLaunch.sln /p:Configuration=Release /p:RestorePackages=false
         working-directory: QuickLaunch
 
       - name: Test
