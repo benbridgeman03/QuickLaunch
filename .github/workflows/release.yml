@@ -32,7 +32,7 @@ jobs:
         working-directory: QuickLaunch
 
       - name: Publish
-        run: dotnet publish QuickLaunch.UI/QuickLaunch.UI.csproj --configuration Release --runtime win-x64 --self-contained true --output ../publish
+        run: msbuild QuickLaunch.UI/QuickLaunch.UI.csproj /t:Publish /p:Configuration=Release /p:RuntimeIdentifier=win-x64 /p:SelfContained=true /p:PublishDir=..\..\publish
         working-directory: QuickLaunch
 
       - name: Zip release
