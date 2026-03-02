@@ -1,7 +1,5 @@
 # QuickLaunch
 
-> **Work in Progress**
-
 QuickLaunch is a lightweight launcher built to replace the unreliable Windows Search experience. Windows’ built-in search is often slow, inconsistent, and fails to surface apps or files you use every day. QuickLaunch focuses on speed, simplicity, and predictable results.
 
 ---
