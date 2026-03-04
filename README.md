@@ -76,6 +76,13 @@ Click the **gear icon** on the right side of the search bar to open the Settings
 
 ---
 
-## Status
+## Screenshots
 
-QuickLaunch is actively being developed. Features, behavior, and performance are subject to change.
+### Popup
+![Popup](screenshots/Search.png)
+
+### Search Results
+![Search Results](screenshots/SearchResults.png)
+
+### During Game
+![Settings](screenshots/Settings.png)
